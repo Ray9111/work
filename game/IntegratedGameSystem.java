@@ -14,8 +14,9 @@ public class IntegratedGameSystem {
             System.out.println("1. 擲骰子遊戲 (Craps)");
             System.out.println("2. 猜數字遊戲 (1A2B)");
             System.out.println("3. 剪刀石頭布 (自行開發遊戲)");
-            System.out.println("4. 結束系統");
-            System.out.print("請輸入選項 (1-4): ");
+            System.out.println("4. 井字遊戲 (Tic Tac Toe)"); // New game
+            System.out.println("5. 結束系統");
+            System.out.print("請輸入選項 (1-5): ");
 
             String input = scanner.next(); // 讀取輸入
 
@@ -30,6 +31,9 @@ public class IntegratedGameSystem {
                     playRPS(); // [cite: 48] 呼叫自行開發遊戲
                     break;
                 case "4":
+                    playTicTacToe(); // 呼叫井字遊戲
+                    break;
+                case "5":
                     System.out.println("系統結束，拜拜！"); // [cite: 50]
                     System.exit(0);
                 default:
@@ -105,6 +109,12 @@ public class IntegratedGameSystem {
         while (a != 4) {
             System.out.print("請輸入 4 個不重複的數字 (例如 1234): ");
             String guess = scanner.next();
+
+            // 若輸入 5 則跳出遊戲
+            if (guess.equals("5")) {
+                System.out.println("已中斷遊戲，返回主選單。");
+                return;
+            }
 
             // 基本防呆：檢查長度
             if (guess.length() != 4) {
@@ -188,6 +198,131 @@ public class IntegratedGameSystem {
         } else {
             System.out.println("結果: 你輸了，電腦獲勝！");
         }
+    }
+
+    // ==========================================
+    // 遊戲 4: 井字遊戲 (Tic Tac Toe)
+    // ==========================================
+    public static void playTicTacToe() {
+        System.out.println("\n--- 遊戲開始: 井字遊戲 ---");
+        char[][] board = {
+                { ' ', ' ', ' ' },
+                { ' ', ' ', ' ' },
+                { ' ', ' ', ' ' }
+        };
+
+        // 玩家執 'X', 電腦執 'O'
+        boolean playerTurn = true;
+        boolean gameEnded = false;
+
+        while (!gameEnded) {
+            printBoard(board);
+            if (playerTurn) {
+                System.out.print("換你下了 (輸入 1-9 對應位置, 例如左上是1, 右下是9): ");
+                String input = scanner.next();
+
+                // 離開機制
+                if (input.equals("q") || input.equals("quit")) {
+                    System.out.println("遊戲中止。");
+                    return;
+                }
+
+                int pos;
+                try {
+                    pos = Integer.parseInt(input);
+                } catch (NumberFormatException e) {
+                    System.out.println("請輸入有效數字！");
+                    continue;
+                }
+
+                if (pos < 1 || pos > 9) {
+                    System.out.println("輸入無效 (1-9)！");
+                    continue;
+                }
+
+                int row = (pos - 1) / 3;
+                int col = (pos - 1) % 3;
+
+                if (board[row][col] != ' ') {
+                    System.out.println("該位置已經有人了！");
+                    continue;
+                }
+
+                board[row][col] = 'X';
+
+            } else {
+                // 電腦回合 (隨機下)
+                System.out.println("電腦思考中...");
+                boolean validMove = false;
+                while (!validMove) {
+                    int r = (int) (Math.random() * 3);
+                    int c = (int) (Math.random() * 3);
+                    if (board[r][c] == ' ') {
+                        board[r][c] = 'O';
+                        validMove = true;
+                    }
+                }
+            }
+
+            // 檢查輸贏
+            if (checkWin(board, 'X')) {
+                printBoard(board);
+                System.out.println("恭喜！你贏了！");
+                gameEnded = true;
+            } else if (checkWin(board, 'O')) {
+                printBoard(board);
+                System.out.println("電腦贏了，再接再厲。");
+                gameEnded = true;
+            } else if (isBoardFull(board)) {
+                printBoard(board);
+                System.out.println("平手 (Draw)！");
+                gameEnded = true;
+            }
+
+            // 換手
+            playerTurn = !playerTurn;
+        }
+    }
+
+    private static void printBoard(char[][] board) {
+        System.out.println("-------------");
+        for (int i = 0; i < 3; i++) {
+            System.out.print("| ");
+            for (int j = 0; j < 3; j++) {
+                System.out.print(board[i][j] + " | ");
+            }
+            System.out.println("\n-------------");
+        }
+    }
+
+    private static boolean checkWin(char[][] board, char symbol) {
+        // 檢查列
+        for (int i = 0; i < 3; i++) {
+            if (board[i][0] == symbol && board[i][1] == symbol && board[i][2] == symbol)
+                return true;
+        }
+        // 檢查行
+        for (int j = 0; j < 3; j++) {
+            if (board[0][j] == symbol && board[1][j] == symbol && board[2][j] == symbol)
+                return true;
+        }
+        // 檢查對角線
+        if (board[0][0] == symbol && board[1][1] == symbol && board[2][2] == symbol)
+            return true;
+        if (board[0][2] == symbol && board[1][1] == symbol && board[2][0] == symbol)
+            return true;
+
+        return false;
+    }
+
+    private static boolean isBoardFull(char[][] board) {
+        for (int i = 0; i < 3; i++) {
+            for (int j = 0; j < 3; j++) {
+                if (board[i][j] == ' ')
+                    return false;
+            }
+        }
+        return true;
     }
 
     // 把數字轉成文字的小工具
